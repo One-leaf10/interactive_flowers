@@ -1,75 +1,46 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Flowers</title>
-<style>
-  *{margin:0;padding:0}
-  body{background:#0a0a0f;overflow:hidden;touch-action:none}
-  canvas{position:fixed;top:0;left:0;width:100%;height:100%}
-  #t{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:#ffffff88;font-size:12px;letter-spacing:2px;pointer-events:none}
-</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>flowers</title>
+<style>body{margin:0;background:#000;overflow:hidden}canvas{display:block}#t{position:fixed;bottom:20px;width:100%;text-align:center;color:#fff6;font:12px monospace;pointer-events:none}</style>
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="t">TOCA PARA FLORECER</div>
+<div id="t">TOCA LA PANTALLA</div>
 <script>
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-let W = canvas.width = window.innerWidth;
-let H = canvas.height = window.innerHeight;
-window.addEventListener('resize',()=>{ W=canvas.width=innerWidth; H=canvas.height=innerHeight; });
-
-const TYPES = [
-  {p:5, c:['#ffafcc','#ffb3c6'], s:'round'},
-  {p:6, c:['#ff4d6d','#ff758f'], s:'cup'},
-  {p:12, c:['#e5383b','#ff0000'], s:'round'},
-  {p:16, c:['#ffbe0b','#fb5607'], s:'point'},
-  {p:6, c:['#ffffff','#dee2e6'], s:'long'},
-  {p:10, c:['#ffffff','#caffbf'], s:'long'}
-];
-let flowers=[];
-
-function Flower(x,y,i){
-  this.x=x; this.y=y; this.type=TYPES[i % TYPES.length];
-  this.r=0; this.maxR=16; this.g=0; this.a=Math.random()*6;
+let c=document.getElementById('c'), x=c.getContext('2d');
+function size(){ c.width=innerWidth; c.height=innerHeight; }
+size(); addEventListener('resize',size);
+let fl=[];
+let colors=[["#ffafcc","#ffb3c6"],["#ff4d6d","#ff758f"],["#ff0000","#e5383b"],["#ffbe0b","#fb5607"],["#fff","#dee2e6"],["#fff","#caffbf"]];
+function add(X,Y){
+ document.getElementById('t').style.display='none';
+ let id=fl.length%colors.length;
+ fl.push({x:X,y:Y,c:colors[id],p:[5,6,12,16,6,10][id],r:0,g:0,a:Math.random()*6});
 }
-Flower.prototype.draw=function(){
-  if(this.g<1) this.g+=0.02;
-  this.r = this.maxR * this.g;
-  this.a+=0.005;
-  ctx.save();
-  ctx.translate(this.x, this.y);
-  // tallo
-  ctx.strokeStyle='rgba(100,180,100,0.5)';
-  ctx.lineWidth=1;
-  ctx.beginPath();
-  ctx.moveTo(0,0);
-  ctx.lineTo(Math.sin(this.a)*5, 40);
-  ctx.stroke();
-  ctx.translate(Math.sin(this.a)*5, 40);
-  // petalos
-  for(let k=0;k<this.type.p;k++){
-    ctx.save();
-    ctx.rotate((k/this.type.p)*Math.PI*2);
-    ctx.fillStyle=this.type.c[k%2];
-    ctx.beginPath();
-    if(this.type.s==='round'){
-      ctx.ellipse(0,-this.r*0.7, this.r*0.45, this.r*0.75, 0,0,Math.PI*2);
-    } else if(this.type.s==='cup'){
-      ctx.ellipse(0,-this.r*0.6, this.r*0.35, this.r*0.7, 0,0,Math.PI*2);
-    } else if(this.type.s==='point'){
-      ctx.moveTo(0,0); ctx.quadraticCurveTo(this.r*0.3, -this.r*0.6, 0, -this.r); ctx.quadraticCurveTo(-this.r*0.3, -this.r*0.6, 0,0);
-    } else {
-      ctx.ellipse(0,-this.r*0.8, this.r*0.25, this.r*0.9, 0,0,Math.PI*2);
-    }
-    ctx.fill();
-    ctx.restore();
+function draw(){
+ x.fillStyle='rgba(0,0,0,0.25)'; x.fillRect(0,0,c.width,c.height);
+ fl.forEach(f=>{
+  if(f.g<1)f.g+=0.03;
+  f.r=16*f.g; f.a+=0.01;
+  x.save(); x.translate(f.x,f.y); x.translate(Math.sin(f.a)*4,40);
+  for(let i=0;i<f.p;i++){
+   x.save(); x.rotate(i/f.p*Math.PI*2);
+   x.fillStyle=f.c[i%2];
+   x.beginPath(); x.ellipse(0,-f.r*0.7,f.r*0.4,f.r*0.7,0,0,Math.PI*2); x.fill();
+   x.restore();
   }
-  ctx.beginPath(); ctx.arc(0,0,this.r*0.25,0,Math.PI*2); ctx.fillStyle='#ffbe0b'; ctx.fill();
-  ctx.restore();
-};
-
-function add(x,y){
-  document.getElementById('t').style.opacity='0
+  x.beginPath(); x.arc(0,0,f.r*0.3,0,7); x.fillStyle='#ffbe0b'; x.fill();
+  x.restore();
+ });
+ requestAnimationFrame(draw);
+}
+draw();
+c.addEventListener('touchstart',e=>{e.preventDefault();add(e.touches[0].clientX,e.touches[0].clientY)},{passive:false});
+c.addEventListener('click',e=>add(e.clientX,e.clientY));
+setTimeout(()=>add(innerWidth/2,innerHeight/2),500);
+</script>
+</body>
+</html>
